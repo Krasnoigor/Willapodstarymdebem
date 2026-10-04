@@ -28,7 +28,7 @@ const ITEMS: {
 /** Contact section — short intro on the left, large phone numbers and e-mail on the right. */
 export function Contact() {
   return (
-    <section id="kontakt" className="relative overflow-hidden bg-[#0D221A] px-6 py-24 sm:py-32">
+    <section id="kontakt" className="relative scroll-mt-16 overflow-hidden bg-[#0D221A] px-6 py-24 sm:py-32">
       <div aria-hidden="true" className="absolute inset-0 opacity-80">
         {BACKGROUNDS.map(({ src, left, width, position, clip }) => (
           <div

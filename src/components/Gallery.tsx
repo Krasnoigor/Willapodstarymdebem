@@ -101,7 +101,7 @@ export function Gallery() {
   }, [lightboxIndex, filtered.length])
 
   return (
-    <section className="relative overflow-hidden bg-[#FDFBF7] py-20 sm:py-28">
+    <section id="galeria" className="relative scroll-mt-16 overflow-hidden bg-[#FDFBF7] py-20 sm:py-28">
       {/* Znak wodny — ogromne logo, ledwo widoczne, czysto dekoracyjne */}
       <img
         src={logo}
