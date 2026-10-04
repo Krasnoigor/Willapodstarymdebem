@@ -5,8 +5,9 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // Cloudflare Pages ustawia CF_PAGES=1 podczas builda — wtedy strona stoi w katalogu głównym
-  base: process.env.CF_PAGES ? '/' : '/klient/willa-pod-starym-debem/',
+  // Domyślnie strona stoi w katalogu głównym (Cloudflare Pages, własna domena).
+  // Podkatalog można wymusić zmienną środowiskową, np. VITE_BASE=/klient/willa-pod-starym-debem/
+  base: process.env.VITE_BASE ?? '/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
