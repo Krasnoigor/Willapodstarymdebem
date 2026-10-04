@@ -122,7 +122,7 @@ export function UpcomingEvent() {
           aria-label={`Powiększ plakat: ${EVENT.title}`}
           className="mx-auto block w-full max-w-sm overflow-hidden rounded-2xl border border-amber-400/40 shadow-xl shadow-black/50 transition-transform duration-500 hover:scale-[1.02] lg:max-w-none"
         >
-          <img src={EVENT.poster} alt={`Plakat: ${EVENT.title}`} className="block h-auto w-full" />
+          <img src={EVENT.poster} alt={`Plakat: ${EVENT.title}`} loading="lazy" decoding="async" className="block h-auto w-full" />
         </a>
 
         <div className="text-center lg:text-left">

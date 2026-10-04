@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronsLeftRight } from 'lucide-react'
 import dayPhoto from '@/assets/sala_stoly_dzien.jpg'
-import nightPhoto from '@/assets/sala_stoly_noc.png'
+import nightPhoto from '@/assets/sala_stoly_noc.jpg'
 
 /** Draggable before/after comparison of the banquet hall by day vs. by night. */
 export function DayNightSlider() {

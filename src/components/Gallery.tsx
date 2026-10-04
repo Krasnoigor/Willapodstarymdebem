@@ -187,6 +187,7 @@ export function Gallery() {
                   src={image.src}
                   alt={image.title}
                   loading="lazy"
+                  decoding="async"
                   className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                 />
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#1C352D]/0 opacity-0 transition-all duration-300 group-hover:bg-[#1C352D]/60 group-hover:opacity-100">

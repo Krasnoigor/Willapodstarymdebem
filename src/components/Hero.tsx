@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { FallingLeaves } from '@/components/FallingLeaves'
 import logo from '@/assets/LOGO_TEXTURE.png'
 import heroBg from '@/assets/GALERIA/12.jpg'
@@ -7,44 +7,61 @@ const EVENTS = ['Wesela', 'Chrzciny', 'Przyjęcia okolicznościowe', 'Bale']
 
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null)
+  const bgRef = useRef<HTMLDivElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
   const logoRef = useRef<HTMLDivElement>(null)
-  const [progress, setProgress] = useState(0)
-  const [spotlight, setSpotlight] = useState({ x: 50, y: 50, active: false })
+  const eventsRef = useRef<HTMLElement>(null)
+  const spotlightRef = useRef<HTMLDivElement>(null)
 
-  function handleHeroMouseMove(e: React.MouseEvent<HTMLElement>) {
-    const rect = logoRef.current?.getBoundingClientRect()
-    if (!rect) return
-    setSpotlight({
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
-      active: true,
-    })
-  }
-
-  function handleHeroMouseLeave() {
-    setSpotlight((s) => ({ ...s, active: false }))
-  }
-
+  // Efekty zależne od scrolla i myszy zmieniają style bezpośrednio (bez renderowania Reacta),
+  // dzięki czemu przewijanie jest płynne.
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (prefersReducedMotion) return
 
+    let lastProgress = -1
     let ticking = false
+
+    function apply() {
+      ticking = false
+      const heroHeight = sectionRef.current?.offsetHeight ?? window.innerHeight
+      const progress = Math.min(1, Math.max(0, window.scrollY / heroHeight))
+      if (progress === lastProgress) return
+      lastProgress = progress
+      if (bgRef.current) bgRef.current.style.transform = `scale(1.1) translateY(${progress * 10}%)`
+      if (overlayRef.current) overlayRef.current.style.opacity = String(0.7 + progress * 0.25)
+      if (logoRef.current) {
+        logoRef.current.style.transform = `scale(${1 - progress * 0.15})`
+        logoRef.current.style.opacity = String(1 - progress)
+      }
+      if (eventsRef.current) eventsRef.current.style.opacity = String(1 - progress)
+    }
+
     function handleScroll() {
       if (ticking) return
       ticking = true
-      requestAnimationFrame(() => {
-        const heroHeight = sectionRef.current?.offsetHeight ?? window.innerHeight
-        setProgress(Math.min(1, Math.max(0, window.scrollY / heroHeight)))
-        ticking = false
-      })
+      requestAnimationFrame(apply)
     }
 
+    apply()
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  function handleHeroMouseMove(e: React.MouseEvent<HTMLElement>) {
+    const logoEl = logoRef.current
+    const spot = spotlightRef.current
+    if (!logoEl || !spot) return
+    const rect = logoEl.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    spot.style.background = `radial-gradient(circle at ${x}% ${y}%, rgba(255,255,255,0.264), transparent 80%)`
+    spot.style.opacity = '1'
+  }
+
+  function handleHeroMouseLeave() {
+    if (spotlightRef.current) spotlightRef.current.style.opacity = '0'
+  }
 
   return (
     <section
@@ -55,18 +72,13 @@ export function Hero() {
     >
       {/* Zdjęcie w tle — delikatna paralaksa przy scrollu */}
       <div
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-100 ease-out"
-        style={{
-          backgroundImage: `url(${heroBg})`,
-          transform: `scale(1.1) translateY(${progress * 10}%)`,
-        }}
+        ref={bgRef}
+        className="absolute inset-0 bg-cover bg-center will-change-transform"
+        style={{ backgroundImage: `url(${heroBg})`, transform: 'scale(1.1)' }}
       />
 
       {/* Ciemna nakładka — utrzymuje głębię i czytelność logo/listków, przyciemnia się przy scrollu */}
-      <div
-        className="absolute inset-0 bg-[#1C352D] transition-opacity duration-100 ease-out"
-        style={{ opacity: 0.7 + progress * 0.25 }}
-      />
+      <div ref={overlayRef} className="absolute inset-0 bg-[#1C352D]" style={{ opacity: 0.7 }} />
 
       {/* Czyste cięcie po łuku — odcina ciemne zdjęcie od beżowej Galerii pod spodem */}
       <div className="absolute right-0 bottom-0 left-0 z-10 w-full overflow-hidden leading-none">
@@ -93,11 +105,7 @@ export function Hero() {
         {/* Główne logo — zmniejsza skalę i zanika przy scrollu */}
         <div
           ref={logoRef}
-          className="relative w-[44vw] max-w-[600px] min-w-[320px] transition-[transform,opacity] duration-100 ease-out"
-          style={{
-            transform: `scale(${1 - progress * 0.15})`,
-            opacity: 1 - progress,
-          }}
+          className="relative w-[44vw] max-w-[600px] min-w-[320px] will-change-transform"
         >
           <img
             src={logo}
@@ -107,10 +115,10 @@ export function Hero() {
 
           {/* Interaktywny spotlight — zamaskowany kształtem logo, bez prostokątnej ramki */}
           <div
+            ref={spotlightRef}
             className="pointer-events-none absolute inset-0 transition-opacity duration-300 ease-out"
             style={{
-              opacity: spotlight.active ? 1 : 0,
-              background: `radial-gradient(circle at ${spotlight.x}% ${spotlight.y}%, rgba(255,255,255,0.264), transparent 80%)`,
+              opacity: 0,
               mixBlendMode: 'overlay',
               WebkitMaskImage: `url(${logo})`,
               maskImage: `url(${logo})`,
@@ -129,9 +137,9 @@ export function Hero() {
 
         {/* Oferta — duże napisy pod logo */}
         <nav
+          ref={eventsRef}
           aria-label="Rodzaje wydarzeń"
           className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-3 font-serif text-lg font-semibold tracking-[0.18em] uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] sm:mt-10 sm:gap-x-6 sm:text-2xl lg:text-3xl"
-          style={{ opacity: 1 - progress }}
         >
           {EVENTS.map((label, i) => (
             <span key={label} className="flex items-center gap-x-4 sm:gap-x-6">
